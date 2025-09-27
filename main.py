@@ -6,18 +6,18 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-# Zakres dostępu: tylko odczyt maili
+# Gmail API scope: read-only access to emails
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
 
 def main():
     creds = None
 
-    # Token zapisany po pierwszym logowaniu
+    # Load saved token from previous authentication
     if os.path.exists('token.json'):
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 
-    # Jeśli nie ma tokena, użytkownik musi się zalogować
+    # If there are no valid credentials available, let the user log in
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -26,21 +26,21 @@ def main():
                 'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
 
-        # Zapisz token do pliku
+        # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
 
-    # Połącz się z Gmail API
+    # Build the Gmail API service
     service = build('gmail', 'v1', credentials=creds)
 
-    # Pobierz najnowsze 5 wiadomości
+    # Get the latest 5 messages
     results = service.users().messages().list(userId='me', maxResults=5).execute()
     messages = results.get('messages', [])
 
     if not messages:
-        print('Brak wiadomości.')
+        print('No messages found.')
     else:
-        print('Ostatnie wiadomości:')
+        print('Latest messages:')
         for msg in messages:
             msg_data = service.users().messages().get(
                 userId='me', id=msg['id']).execute()

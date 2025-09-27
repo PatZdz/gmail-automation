@@ -172,3 +172,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Gmail API sensitive files
+token.json
+credentials.json.backup
+
+# Environment variables
+.env
